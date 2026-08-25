@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
 
 from app.chat_service import ChatService
 from app.config import settings
+from app.graph.graph import graph
 from app.knowledge_base import SUPPORTED_EXTENSIONS, KnowledgeBase
 from app.schemas import ChatRequest, ChatResponse, IngestResponse
 
@@ -51,11 +52,13 @@ async def upload_document(
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(
-    request: ChatRequest, service: ChatService = Depends(get_chat_service)
-) -> ChatResponse:
+async def chat(request: ChatRequest) -> ChatResponse:
     if not settings.groq_api_key:
         raise HTTPException(
             status_code=503, detail="GROQ_API_KEY has not been configured."
         )
-    return await service.answer(request.message)
+
+    if not request.message or request.message.strip() == "":
+        raise HTTPException(status_code=400, detail="The 'message' field is required.")
+    response = await graph.ainvoke({"question": request.message})
+    return response["final_response"]

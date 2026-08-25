@@ -13,6 +13,5 @@ knowledge base.
 
 
 Next in line
-- Add Shopify storefront
 - Add structured error handling, authentication, logging, and rate limits.
 - Add curated questions and retrieval/answer-quality evaluations.
