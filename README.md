@@ -13,6 +13,6 @@ knowledge base.
 
 
 Next in line
-- Add Shopify as another loader at the same ingestion boundary.
+- Add Shopify storefront
 - Add structured error handling, authentication, logging, and rate limits.
 - Add curated questions and retrieval/answer-quality evaluations.
