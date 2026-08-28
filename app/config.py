@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     retrieval_k: int = 4
     documents_dir: Path = PROJECT_DIR / "data" / "documents"
     vectorstore_dir: Path = PROJECT_DIR / "data" / "vectorstore"
+    access_token: str | None = None
+    shop_domain: str | None = None
 
 
 settings = Settings()

@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.chat_service import ChatService
 from app.config import settings

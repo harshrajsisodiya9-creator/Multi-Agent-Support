@@ -23,6 +23,7 @@ Rules:
 - If information is missing, clearly say that you do not have it.
 - Keep the response concise and helpful.
 - Do not mention internal tools, agents, RAG, MCP, or the routing process.
+- Keep plain text only, no markdown, bold, no asterisks
 """
 
 
@@ -41,10 +42,10 @@ class ResponseNode:
         context_parts = []
 
         if rag_response:
-            context_parts.append(f"Knowledge-base response:\n{rag_response.answer}")
+            context_parts.append(f"Knowledge-base response: {rag_response.answer}")
 
         if order_response:
-            context_parts.append(f"Order information:\n{order_response}")
+            context_parts.append(f"Order information: {order_response}")
 
         context = "\n\n".join(context_parts)
 
