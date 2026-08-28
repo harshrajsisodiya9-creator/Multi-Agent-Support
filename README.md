@@ -13,6 +13,8 @@ knowledge base.
 
 
 Next in line
-- Add Shopify as another loader at the same ingestion boundary.
-- Add structured error handling, authentication, logging, and rate limits.
+- Connect with local working theme of shopify for testing
+- Containerize and deploy on Cloud, have a working demo for client
 - Add curated questions and retrieval/answer-quality evaluations.
+- Conversation memory addition
+- Add structured error handling, authentication, logging, and rate limits.
