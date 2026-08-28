@@ -1,4 +1,4 @@
-This intentionally covers the base only: no Shopify connection, authentication,
+This intentionally covers the base only(for now): no connection with ui, authentication,
 conversation memory, observability/evaluations, or production error strategy yet.
 
 Upload and index a document:
