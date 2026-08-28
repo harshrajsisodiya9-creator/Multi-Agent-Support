@@ -13,7 +13,7 @@ knowledge base.
 
 
 Next in line
-- Connect with local working theme of shopify for testing
+- Connect with clients ui for testing
 - Containerize and deploy on Cloud, have a working demo for client
 - Add curated questions and retrieval/answer-quality evaluations.
 - Conversation memory addition
