@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Literal
 
 from langchain_groq import ChatGroq
@@ -5,6 +6,8 @@ from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.graph.state import ChatState
+
+logger = logging.getLogger(__name__)
 
 
 class RouterDecision(BaseModel):
@@ -93,13 +96,18 @@ class RouterNode:
         self.llm = llm.with_structured_output(RouterDecision)
 
     async def __call__(self, state: ChatState) -> dict[str, Any]:
-        decision: RouterDecision = await self.llm.ainvoke(
-            [
-                ("system", SYSTEM_PROMPT),
-                ("human", state["question"]),  # type: ignore
-            ]
-        )  # type: ignore
+        try:
+            decision: RouterDecision = await self.llm.ainvoke(
+                [
+                    ("system", SYSTEM_PROMPT),
+                    ("human", state["question"]),  # type: ignore
+                ]
+            )  # type: ignore
+        except Exception:
+            logger.exception("Router LLM call failed")
+            raise
 
+        logger.info(f"Route decided: {decision.route}")
         return {
             "route": decision.route,
             "rag_query": decision.rag_query,

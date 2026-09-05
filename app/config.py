@@ -10,8 +10,6 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     groq_model: str = "openai/gpt-oss-120b"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
-    chunk_size: int = 100
-    chunk_overlap: int = 20
     retrieval_k: int = 4
     documents_dir: Path = PROJECT_DIR / "data" / "documents"
     vectorstore_dir: Path = PROJECT_DIR / "data" / "vectorstore"

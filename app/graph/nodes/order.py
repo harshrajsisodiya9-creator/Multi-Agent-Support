@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 from typing import Any
 
 import httpx
@@ -69,7 +72,8 @@ class OrderNode:
                         "error": "No such order for the given email",
                     }
                 }
+            logger.info(f"Order found: {orders[0]['node']}")
             return {"order_response": {"found": True, "order": orders[0]["node"]}}
         except Exception as e:
-            print(f"order lookup failed: {e}")  # later replace to logging
+            logger.exception("Order lookup on shopify failed")
             return {"order_response": {"found": False, "error": str(e)}}

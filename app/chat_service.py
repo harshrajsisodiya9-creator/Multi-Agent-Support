@@ -1,6 +1,9 @@
+import logging
+
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 
+logger = logging.getLogger(__name__)
 from app.config import settings
 from app.knowledge_base import KnowledgeBase
 from app.schemas import ChatResponse, Source
@@ -23,6 +26,7 @@ class ChatService:
     async def answer(self, question: str) -> ChatResponse:
         documents = await self.knowledge_base.search(question)
         if not documents:
+            logger.info("No relevant documents found.")
             return ChatResponse(
                 answer="I don't have information about that yet. Please contact support.",
                 sources=[],
@@ -32,14 +36,19 @@ class ChatService:
             f"{doc.metadata.get('page', 'n/a')}]\n{doc.page_content}"
             for doc in documents
         )
-        response = await self.llm.ainvoke(
-            [
-                SystemMessage(content=SYSTEM_PROMPT),
-                HumanMessage(
-                    content=f"Knowledge-base excerpts:\n{excerpts}\n\nQuestion: {question}"
-                ),
-            ]
-        )
+        try:
+            response = await self.llm.ainvoke(
+                [
+                    SystemMessage(content=SYSTEM_PROMPT),
+                    HumanMessage(
+                        content=f"Knowledge-base excerpts:\n{excerpts}\n\nQuestion: {question}"
+                    ),
+                ]
+            )
+        except Exception:
+            logger.exception("LLM call after retrieval failed")
+            raise
+
         sources, seen = [], set()
         for doc in documents:
             source = Source(

@@ -1,16 +1,25 @@
 """FastAPI entry point for the client knowledge chatbot."""
 
 import asyncio
+import logging
 from functools import lru_cache
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import (
+    CORSMiddleware,  # not needed since we are using proxy from shopify, but keeping it for local testing
+)
 
 from app.chat_service import ChatService
 from app.config import settings
 from app.graph.graph import graph
 from app.knowledge_base import SUPPORTED_EXTENSIONS, KnowledgeBase
+from app.logging_config import setup_logging
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
+
 from app.schemas import ChatRequest, ChatResponse, IngestResponse
 
 app = FastAPI(title="Client Knowledge Chatbot", version="0.1.0")
@@ -45,10 +54,7 @@ async def upload_document(
     destination = settings.documents_dir / filename
     content = await file.read()
     await asyncio.to_thread(destination.write_bytes, content)
-    try:
-        chunks = await kb.ingest(destination)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    chunks = await kb.ingest(destination)
     return IngestResponse(filename=filename, chunks_indexed=chunks)
 
 
@@ -61,5 +67,11 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
     if not request.message or request.message.strip() == "":
         raise HTTPException(status_code=400, detail="The 'message' field is required.")
+
+    logger.info(f"Received chat request: {request.message}")
+
     response = await graph.ainvoke({"question": request.message})
+
+    logger.info("Graph execution completed.")
+
     return response["final_response"]

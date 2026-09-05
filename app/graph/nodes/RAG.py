@@ -10,5 +10,4 @@ class RAGNode:
 
     async def __call__(self, state: ChatState) -> dict[str, Any]:
         response = await self.chat_service.answer(state["rag_query"])  # type: ignore
-        print("RAG is getting used")
         return {"rag_response": response}

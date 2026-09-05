@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -6,6 +7,8 @@ from langchain_groq import ChatGroq
 from app.config import settings
 from app.graph.state import ChatState
 from app.schemas import ChatResponse
+
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are the final response assistant for a store
 customer-support chatbot.
@@ -36,6 +39,15 @@ class ResponseNode:
         )
 
     async def __call__(self, state: ChatState) -> dict[str, Any]:
+        if state.get("route") == "rag":
+            logger.info("Generating final response using RAG response only.")
+            return {
+                "final_response": ChatResponse(
+                    answer=state["rag_response"].answer,  # type: ignore
+                    sources=state["rag_response"].sources,  # type: ignore
+                )
+            }
+
         rag_response = state.get("rag_response")
         order_response = state.get("order_response")
 
@@ -49,17 +61,22 @@ class ResponseNode:
 
         context = "\n\n".join(context_parts)
 
-        response = await self.llm.ainvoke(
-            [
-                SystemMessage(content=SYSTEM_PROMPT),
-                HumanMessage(
-                    content=(
-                        f"Customer question:\n{state['question']}\n\n"  # type: ignore
-                        f"Available information:\n{context}"
-                    )
-                ),
-            ]
-        )
+        try:
+            response = await self.llm.ainvoke(
+                [
+                    SystemMessage(content=SYSTEM_PROMPT),
+                    HumanMessage(
+                        content=(
+                            f"Customer question:\n{state['question']}\n\n"  # type: ignore
+                            f"Available information:\n{context}"
+                        )
+                    ),
+                ]
+            )
+
+        except Exception:
+            logger.exception("Final response LLM call failed")
+            raise
 
         sources = []
 
