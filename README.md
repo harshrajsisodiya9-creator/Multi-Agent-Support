@@ -1,4 +1,4 @@
-This intentionally covers the base only: no Shopify connection, authentication,
+This intentionally covers the base only(for now): no connection with ui, authentication,
 conversation memory, observability/evaluations, or production error strategy yet.
 
 Upload and index an FAQ document. Each question must begin at the start of a
@@ -25,7 +25,8 @@ knowledge base.
 
 
 Next in line
-- Add structured error handling, authentication, logging, and rate limits.
+- Connect with clients ui for testing
+- Containerize and deploy on Cloud, have a working demo for client
 - Add curated questions and retrieval/answer-quality evaluations.
 
 Realizing something now that instead of OrderNode i could edit to something customer info which could call tools to get the relvant info, for now since the client doesnt need anything else related to customer except orders keep it as is
