@@ -1,10 +1,13 @@
-from typing import Literal
+import logging
+from typing import Any, Literal
 
 from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.graph.state import ChatState
+
+logger = logging.getLogger(__name__)
 
 
 class RouterDecision(BaseModel):
@@ -23,11 +26,12 @@ class RouterDecision(BaseModel):
         ),
     )
 
-    order_query: str | None = Field(
+    order_query: dict[str, str] | None = Field(
         default=None,
         description=(
             "A focused request for order information. "
             "Only provide this when order access is required."
+            "The format is dict with order and email keys, e.g. {'order': '12345', 'email':"
         ),
     )
 
@@ -91,14 +95,19 @@ class RouterNode:
 
         self.llm = llm.with_structured_output(RouterDecision)
 
-    async def __call__(self, state: ChatState) -> dict[str, str | None]:
-        decision: RouterDecision = await self.llm.ainvoke(
-            [
-                ("system", SYSTEM_PROMPT),
-                ("human", state["question"]),  # type: ignore
-            ]
-        )  # type: ignore
+    async def __call__(self, state: ChatState) -> dict[str, Any]:
+        try:
+            decision: RouterDecision = await self.llm.ainvoke(
+                [
+                    ("system", SYSTEM_PROMPT),
+                    ("human", state["question"]),  # type: ignore
+                ]
+            )  # type: ignore
+        except Exception:
+            logger.exception("Router LLM call failed")
+            raise
 
+        logger.info(f"Route decided: {decision.route}")
         return {
             "route": decision.route,
             "rag_query": decision.rag_query,

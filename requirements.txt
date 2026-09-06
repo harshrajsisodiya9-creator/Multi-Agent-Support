@@ -7,7 +7,6 @@ langchain
 langchain-community
 langchain-groq
 langchain-chroma
-langchain-text-splitters
 pypdf
 fastembed
 langgraph
