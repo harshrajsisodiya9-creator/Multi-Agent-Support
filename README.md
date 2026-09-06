@@ -32,5 +32,3 @@ Next in line
 Realizing something now that instead of OrderNode i could edit to something customer info which could call tools to get the relvant info, for now since the client doesnt need anything else related to customer except orders keep it as is
 
 Final call to llm inside the response node can be skipped if only retrieval is required since the RAG node does use llm to generate response
-
-Mistake: Naming convention of RAG.py is wrong since we are only retrieving using that node and not generating(not in that step)
