@@ -33,3 +33,5 @@ Realizing something now that instead of OrderNode i could edit to something cust
 Final call to llm inside the response node can be skipped if only retrieval is required since the RAG node does use llm to generate response
 
 Mistake: Naming convention of RAG.py is wrong since we are only retrieving using that node and not generating(not in that step)
+
+Latency Optimization: While tracing requests with LangSmith, I noticed that the final response agent was taking a significant amount of time. After investigating the data being passed from the OrderNode, I found that it was returning the raw Shopify order response instead of a clean, structured representation of the order information. I changed the OrderNode to extract only the relevant fields, such as fulfillment status, financial status, items, total, and tracking information, before passing the data to the final agent. This reduced the amount of unnecessary context the LLM had to process and brought the end-to-end latency for the same request down from 2.03s to 1.74s.

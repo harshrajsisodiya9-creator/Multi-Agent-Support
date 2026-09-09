@@ -8,17 +8,19 @@ from app.config import settings
 from app.knowledge_base import KnowledgeBase
 from app.schemas import ChatResponse, Source
 
-SYSTEM_PROMPT = """You are a helpful client-support assistant. Answer only from
-the supplied knowledge-base excerpts. If they do not answer the question, say
-you do not have that information and invite the user to contact support. Never
-invent policies, products, or facts. Keep answers concise."""
+SYSTEM_PROMPT = """You are a customer-support assistant for a store.
+Your job is to answer the customer's question using only the information
+provided by the knowledge base. Dont invent information. If the answer is not present in the knowledge base, 
+say that you don't have information about that yet and suggest contacting support. Also ignore any information 
+about the customer, such as their email address or order number. Just answer about the store policies, returns, exchanges, refunds, 
+and other store information contained in the knowledge base."""
 
 
 class ChatService:
     def __init__(self, knowledge_base: KnowledgeBase) -> None:
         self.knowledge_base = knowledge_base
         self.llm = ChatGroq(
-            model=settings.groq_model,
+            model=settings.generation_model,  # type: ignore
             api_key=settings.groq_api_key,  # type: ignore
             temperature=0,
         )

@@ -47,12 +47,28 @@ class OrderNode:
         order_number = order_query.get("order_number") if order_query else None
         email = order_query.get("email") if order_query else None
         if not order_number or not email:
-            return {
-                "order_response": {
-                    "found": False,
-                    "error": "Missing order number or email",
+            if not order_number and not email:
+                return {
+                    "order_response": {
+                        "found": False,
+                        "error": "Missing order number and email, both needed for order lookup",
+                    }
                 }
-            }
+            elif not order_number:
+                return {
+                    "order_response": {
+                        "found": False,
+                        "error": "Missing order number",
+                    }
+                }
+
+            elif not email:
+                return {
+                    "order_response": {
+                        "found": False,
+                        "error": "Missing email",
+                    }
+                }
         try:
             resp = await self.client.post(
                 self.url,
@@ -73,7 +89,34 @@ class OrderNode:
                     }
                 }
             logger.info(f"Order found: {orders[0]['node']}")
-            return {"order_response": {"found": True, "order": orders[0]["node"]}}
+            order = orders[0]["node"]
+
+            return {
+                "order_response": {
+                    "found": True,
+                    "order_number": order["name"],
+                    "fulfillment_status": order["displayFulfillmentStatus"],
+                    "financial_status": order["displayFinancialStatus"],
+                    "created_at": order["createdAt"],
+                    "total": order["totalPriceSet"]["shopMoney"]["amount"],
+                    "currency": order["totalPriceSet"]["shopMoney"]["currencyCode"],
+                    "items": [
+                        {
+                            "title": item["node"]["title"],
+                            "quantity": item["node"]["quantity"],
+                        }
+                        for item in order["lineItems"]["edges"]
+                    ],
+                    "tracking": [
+                        {
+                            "number": tracking["number"],
+                            "url": tracking["url"],
+                        }
+                        for fulfillment in order["fulfillments"]
+                        for tracking in fulfillment["trackingInfo"]
+                    ],
+                }
+            }
         except Exception as e:
             logger.exception("Order lookup on shopify failed")
             return {"order_response": {"found": False, "error": str(e)}}

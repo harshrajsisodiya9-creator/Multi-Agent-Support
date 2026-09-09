@@ -10,3 +10,4 @@ langchain-chroma
 pypdf
 fastembed
 langgraph
+langchain-google-genai
