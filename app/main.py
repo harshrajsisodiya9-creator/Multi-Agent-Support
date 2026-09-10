@@ -71,6 +71,7 @@ async def upload_document(
 
 
 @app.post("/chat", response_model=ChatResponse)
+@app.post("/chat/", response_model=ChatResponse)
 async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
     if not settings.groq_api_key:
         raise HTTPException(

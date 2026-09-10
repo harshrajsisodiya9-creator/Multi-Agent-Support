@@ -24,6 +24,9 @@ Rules:
 - Do not claim information that is not present in the provided results.
 - If information is missing, clearly say that you do not have it.
 - Keep the response concise and helpful.
+
+Return plain text only.
+Do not use Markdown, HTML or formatting symbols.
 """
 
 

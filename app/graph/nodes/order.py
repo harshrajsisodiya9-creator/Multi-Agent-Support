@@ -44,8 +44,8 @@ class OrderNode:
 
     async def __call__(self, state: ChatState) -> dict[str, Any]:
         order_query = state.get("order_query")
-        order_number = order_query.get("order_number") if order_query else None
-        email = order_query.get("email") if order_query else None
+        order_number = order_query.order_number if order_query else None  # type: ignore
+        email = order_query.email if order_query else None  # type: ignore
         if not order_number or not email:
             if not order_number and not email:
                 return {

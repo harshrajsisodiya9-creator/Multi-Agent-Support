@@ -4,10 +4,11 @@ import asyncio
 import logging
 from pathlib import Path
 
+from langchain_google_vertexai import VertexAIEmbeddings
+
 logger = logging.getLogger(__name__)
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_core.documents import Document
 
 from app.config import settings
@@ -55,7 +56,11 @@ class KnowledgeBase:
     def __init__(self) -> None:
         settings.documents_dir.mkdir(parents=True, exist_ok=True)
         settings.vectorstore_dir.mkdir(parents=True, exist_ok=True)
-        self.embeddings = FastEmbedEmbeddings()
+        self.embeddings = VertexAIEmbeddings(
+            model="gemini-embedding-001",
+            project=settings.gcp_project_id,
+            location="us-central1",
+        )
         self.store = Chroma(
             collection_name="client_knowledge",
             embedding_function=self.embeddings,

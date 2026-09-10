@@ -12,6 +12,14 @@ from app.graph.state import ChatState
 logger = logging.getLogger(__name__)
 
 
+class OrderQuery(BaseModel):
+    order_number: str = Field(
+        description="The customer's order number, without the # symbol."
+    )
+
+    email: str = Field(description="The customer's email address.")
+
+
 class RouterDecision(BaseModel):
     route: Literal[
         "rag",
@@ -28,18 +36,18 @@ class RouterDecision(BaseModel):
         ),
     )
 
-    order_query: dict[str, str] | None = Field(
+    order_query: OrderQuery | None = Field(
         default=None,
         description=(
             "A focused request for order information. "
             "Only provide this when order access is required."
-            "The format is dict with order and email keys, e.g. {'order': '12345', 'email':"
+            "The format is an OrderQuery object with order_number and email fields, e.g. OrderQuery(order_number='12345', email='customer@example.com')"
         ),
     )
 
 
 SYSTEM_PROMPT = """
-You are the routing agent for a store customer-support chatbot.
+You are the routing agent for a T-shirt store customer-support chatbot.
 If conversation history is not provided, you must route the request based on the user's question alone.
 If you have are provided with a conversation history, use it to understand the context of the user's request.
 If the conversation history has order number and email address, you must preserve them in the order_query field.
@@ -47,14 +55,15 @@ If the conversation history has order number and email address, you must preserv
 The chatbot has only these capabilities:
 
 1. RAG
-- Store policies
-- Returns
-- Exchanges
-- Refunds
-- Other store information contained in the knowledge base
+- Shipping and Delivery
+- Returns and Exchanges
+- Tshirt and Size Information
+- Customer Support and Contact Information
+- Refunds and Payments
+- Store Credits
 
 2. ORDER
-- Customer order information
+- Customer specific order information
 - Order status
 - Order details
 
@@ -99,9 +108,9 @@ def format_history(history: list[Message] | None) -> str:
 
 class RouterNode:
     def __init__(self) -> None:
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-3.5-flash-lite",
-            google_api_key=settings.gemini_api_key,
+        llm = ChatGroq(
+            model=settings.routing_model,  # type: ignore
+            api_key=settings.groq_api_key,  # type: ignore
             temperature=0,
         )
 
