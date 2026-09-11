@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     routing_model: str = "qwen/qwen3.8-27b"
     generation_model: str = "openai/gpt-oss-20b"
     final_model: str = "openai/gpt-oss-safeguard-20b"
-    embedding_model: str = "BAAI/bge-small-en-v1.5"
     retrieval_k: int = 2
     documents_dir: Path = PROJECT_DIR / "data" / "documents"
     vectorstore_dir: Path = PROJECT_DIR / "data" / "vectorstore"
