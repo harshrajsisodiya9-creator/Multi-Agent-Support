@@ -8,5 +8,5 @@ langchain-community
 langchain-groq
 langchain-chroma
 pypdf
-fastembed
 langgraph
+fastembed

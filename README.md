@@ -1,34 +1,22 @@
-This intentionally covers the base only(for now): no connection with ui, authentication,
-conversation memory, observability/evaluations, or production error strategy yet.
+The product is a customer support chatbot for my client's ecommerce store. It's chat widget is embedded directly into the storefront, while the backend that powers it runs separately, hosted on Cloud Run. It answers store policy questions (returns, shipping, etc.) and looks up order status for logged-in customers, including combined queries like "can I return order #1234" where it checks both the relevant policy and the order details before responding. It also keeps context across a conversation, so customers can ask follow-up questions without repeating themselves.
 
-Upload and index an FAQ document. Each question must begin at the start of a
-line with `Q:`. Its answer is kept in the same retrieval chunk, up to the next
-`Q:` line. For example:
+High Level Architecture
+![High level Architecture](chatbot_request_flow.png)
 
-```text
-Q: What is your return policy?
-A: Returns are accepted within 30 days of delivery.
+Frontend (Shopify theme app extension)
+The chat widget is built as a Shopify theme app extension client-side JavaScript embedded directly into the storefront theme. It renders the chat UI and handles user input. For logged-in customers, it passes their logged_in_customer_id as a URL parameter to the Shopify App Proxy, which the backend uses to identify the customer and key their conversation history. Guests can still use the widget, but without persisted history across messages.
 
-Q: How long does shipping take?
-A: Standard shipping takes 3–5 business days.
-```
+App Proxy
+Shopify's App Proxy sits between the storefront widget and the FastAPI backend. It forwards the widget's requests including the logged_in_customer_id to the backend hosted on Cloud Run. Since requests are routed through Shopify's own domain rather than calling Cloud Run directly from the browser, it also acts as a CORS bridge, meaning the backend doesn't need to configure CORS itself.
 
-Upload and index the FAQ file:
+Backend (FastAPI on Cloud Run)
+The backend is a FastAPI application deployed on Cloud Run. It's async end-to-end, any CPU-bound work is offloaded to a worker thread so the event loop stays unblocked. The LangGraph workflow is compiled lazily on the first incoming request and then reused for all subsequent requests.
 
-```bash
-curl -X POST http://localhost:8000/documents -F "file=@./company-faq.txt"
-```
+Supervisor/router agent
+The entry point of the graph. It uses an LLM (via ChatGroq) with structured output to classify each incoming message and decide which path to take: a store-policy question, an order-related question, both (for combined queries like "can I return order #1234"), or out-of-scope.
 
-`POST /documents` can be called repeatedly. Uploading a file with the same name
-replaces that document's prior indexed chunks; other documents remain in the
-knowledge base.
+RAG agent (policy questions)
+Handles store-policy questions using retrieval-augmented generation. Store policy documents are embedded(local ) into a local vector store (Chroma/FAISS), and relevant chunks are retrieved and passed to the LLM to generate a grounded answer.
 
-
-Next in line
-- Connect with clients ui for testing
-- Containerize and deploy on Cloud, have a working demo for client
-- Add curated questions and retrieval/answer-quality evaluations.
-
-Realizing something now that instead of OrderNode i could edit to something customer info which could call tools to get the relvant info, for now since the client doesnt need anything else related to customer except orders keep it as is
-
-Final call to llm inside the response node can be skipped if only retrieval is required since the RAG node does use llm to generate response
+Order agent
+Handles order-related questions. It calls Shopify's GraphQL Admin API asynchronously to fetch order details using email address and order number provided by the customer in the query.
