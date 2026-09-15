@@ -9,5 +9,4 @@ langchain-groq
 langchain-chroma
 pypdf
 langgraph
-langchain-google-genai
-langchain-google-vertexai
+fastembed

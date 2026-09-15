@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Literal
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
 
@@ -112,6 +111,7 @@ class RouterNode:
             model=settings.routing_model,  # type: ignore
             api_key=settings.groq_api_key,  # type: ignore
             temperature=0,
+            max_tokens=256,
         )
 
         self.llm = llm.with_structured_output(RouterDecision)

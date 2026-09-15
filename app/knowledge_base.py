@@ -4,7 +4,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 logger = logging.getLogger(__name__)
 from langchain_chroma import Chroma
@@ -56,11 +56,7 @@ class KnowledgeBase:
     def __init__(self) -> None:
         settings.documents_dir.mkdir(parents=True, exist_ok=True)
         settings.vectorstore_dir.mkdir(parents=True, exist_ok=True)
-        self.embeddings = VertexAIEmbeddings(
-            model="gemini-embedding-001",
-            project=settings.gcp_project_id,
-            location="us-central1",
-        )
+        self.embeddings = FastEmbedEmbeddings(model_name=settings.embedding_model)
         self.store = Chroma(
             collection_name="client_knowledge",
             embedding_function=self.embeddings,
